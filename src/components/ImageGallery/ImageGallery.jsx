@@ -1,10 +1,13 @@
 import React from 'react';
+// import axios from 'axios';
 import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem';
 import './ImageGallery.css';
 
-const ImageGallery = () => (
+const ImageGallery = ({ images }) => (
   <ul className="ImageGallery">
-    <ImageGalleryItem />
+    {images.map(({ id, webformatURL }) => (
+      <ImageGalleryItem key={id} smallImageURL={webformatURL} />
+    ))}
   </ul>
 );
 

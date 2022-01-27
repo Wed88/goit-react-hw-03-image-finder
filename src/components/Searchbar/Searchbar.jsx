@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-// import { toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import './Searchbar.css';
 
 export default class Searchbar extends Component {
@@ -8,14 +8,14 @@ export default class Searchbar extends Component {
   };
 
   handleNameChange = event => {
-    this.setState({ imageName: event.currentTarget.value.toLowerCase() });
+    this.setState({ imageName: event.currentTarget.value });
   };
 
   handleSubmit = event => {
     event.preventDefault();
 
     if (this.state.imageName.trim() === '') {
-      alert('Введите название картинки');
+      toast('Enter the name of the picture');
       return;
     }
 

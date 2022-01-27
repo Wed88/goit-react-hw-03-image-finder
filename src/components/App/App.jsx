@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
-import { ToastContainer } from 'react-toastify';
-import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+// import axios from 'axios';
 import Searchbar from '../Searchbar/Searchbar';
 import ImageGallery from '../ImageGallery/ImageGallery';
+import api from 'services/pixabayApi';
+import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
 
 export default class App extends Component {
@@ -18,13 +20,24 @@ export default class App extends Component {
   };
 
   async componentDidUpdate(prevProps, prevState) {
-    if (prevState.imageName !== this.state.imageName) {
+    const prevName = prevState.imageName;
+    const newName = this.state.imageName;
+    const images = this.state.images;
+
+    if (prevName !== newName) {
       this.setState({ isLoading: true });
+
       try {
-        const response = await axios.get(
-          `https://pixabay.com/api/?q=${this.state.imageName}&page=1&key=24433477-a7717dfa51cf01b03daed8616&image_type=photo&orientation=horizontal&per_page=12`
-        );
-        this.setState({ images: response.data.hits });
+        await api
+          .fetchImageNameWithQuery(newName)
+          .then(images => this.setState({ images }));
+        if (images.length === 0) {
+          toast.error(
+            'Ops, there are no images matching your search query. Please try again.'
+          );
+
+          return;
+        }
       } catch (error) {
         this.setState({ error });
       } finally {
@@ -43,7 +56,7 @@ export default class App extends Component {
         {isLoading && <p>Loading...</p>}
         {images.length > 0 && <ImageGallery images={images} />}
 
-        <ToastContainer />
+        <ToastContainer position="top-center" autoClose={3000} />
       </div>
     );
   }

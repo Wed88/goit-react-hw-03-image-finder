@@ -5,6 +5,7 @@ import ImageGallery from '../ImageGallery/ImageGallery';
 import Button from '../Button/Button';
 import api from 'services/pixabayApi';
 import Loader from 'components/Loader/Loader';
+import Modal from 'components/Modal/Modal';
 import 'react-toastify/dist/ReactToastify.css';
 
 import './App.css';
@@ -16,18 +17,8 @@ export default class App extends Component {
     page: 1,
     isLoading: false,
     error: null,
-  };
-
-  handleSearchbarSubmit = imageName => {
-    this.setState({ imageName, page: 1, images: [] });
-  };
-
-  handleIncrementPage = () => {
-    this.setState(prevState => {
-      return {
-        page: prevState.page + 1,
-      };
-    });
+    showModal: false,
+    largeImageURL: null,
   };
 
   async componentDidUpdate(prevProps, prevState) {
@@ -68,17 +59,44 @@ export default class App extends Component {
     }
   }
 
+  toggleModal = largeImageURL => {
+    this.setState(({ showModal }) => ({
+      showModal: !showModal,
+    }));
+    this.setState({ largeImageURL: largeImageURL });
+  };
+
+  handleSearchbarSubmit = imageName => {
+    this.setState({ imageName, page: 1, images: [] });
+  };
+
+  handleIncrementPage = () => {
+    this.setState(prevState => {
+      return {
+        page: prevState.page + 1,
+      };
+    });
+  };
+
   render() {
-    const { images, isLoading, error } = this.state;
+    const { images, isLoading, error, showModal, largeImageURL } = this.state;
+    const { handleSearchbarSubmit, toggleModal, handleIncrementPage } = this;
 
     return (
       <div className="App">
-        <Searchbar onSubmit={this.handleSearchbarSubmit} />
+        <Searchbar onSubmit={handleSearchbarSubmit} />
         {error && <p>Whoops, something went wrong: {error.message}</p>}
         {isLoading && <Loader />}
-        {images.length > 0 && <ImageGallery images={images} />}
+        {images.length > 0 && (
+          <ImageGallery images={images} onOpenModal={toggleModal} />
+        )}
         {images.length > 0 && images.length % 12 === 0 && (
-          <Button onClick={this.handleIncrementPage} />
+          <Button onClick={handleIncrementPage} />
+        )}
+        {showModal && (
+          <Modal onClose={toggleModal}>
+            <img src={largeImageURL} alt="" />
+          </Modal>
         )}
 
         <ToastContainer position="top-center" autoClose={3000} />

@@ -1,12 +1,16 @@
 import React from 'react';
-// import axios from 'axios';
 import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem';
 import './ImageGallery.css';
 
-const ImageGallery = ({ images }) => (
+const ImageGallery = ({ images, onOpenModal }) => (
   <ul className="ImageGallery">
-    {images.map(({ id, webformatURL }) => (
-      <ImageGalleryItem key={id} smallImageURL={webformatURL} />
+    {images.map(({ id, webformatURL, largeImageURL }) => (
+      <ImageGalleryItem
+        key={id}
+        smallImageURL={webformatURL}
+        largeImageURL={largeImageURL}
+        onOpenModal={onOpenModal}
+      />
     ))}
   </ul>
 );

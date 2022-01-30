@@ -1,43 +1,65 @@
 import React, { Component } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
-// import axios from 'axios';
 import Searchbar from '../Searchbar/Searchbar';
 import ImageGallery from '../ImageGallery/ImageGallery';
+import Button from '../Button/Button';
 import api from 'services/pixabayApi';
+import Loader from 'components/Loader/Loader';
 import 'react-toastify/dist/ReactToastify.css';
+
 import './App.css';
 
 export default class App extends Component {
   state = {
     imageName: '',
-    images: [],
+    images: {},
+    page: 1,
     isLoading: false,
     error: null,
   };
 
   handleSearchbarSubmit = imageName => {
-    this.setState({ imageName });
+    this.setState({ imageName, page: 1, images: [] });
+  };
+
+  handleIncrementPage = () => {
+    this.setState(prevState => {
+      return {
+        page: prevState.page + 1,
+      };
+    });
   };
 
   async componentDidUpdate(prevProps, prevState) {
     const prevName = prevState.imageName;
     const newName = this.state.imageName;
-    const images = this.state.images;
+    const prevPage = prevState.page;
+    const newPage = this.state.page;
 
-    if (prevName !== newName) {
+    if (prevName !== newName || prevPage !== newPage) {
       this.setState({ isLoading: true });
 
       try {
-        await api
-          .fetchImageNameWithQuery(newName)
-          .then(images => this.setState({ images }));
-        if (images.length === 0) {
+        const data = await api.fetchImageNameWithQuery(newName, newPage);
+
+        if (data.hits.length === 0) {
           toast.error(
             'Ops, there are no images matching your search query. Please try again.'
           );
 
           return;
         }
+        if (newPage * 12 >= data.totalHits) {
+          toast.warn(
+            'We are sorry, but you  reached the end of search results.'
+          );
+        }
+
+        newPage === 1
+          ? this.setState({ images: data.hits })
+          : this.setState(prevState => {
+              return { images: [...prevState.images, ...data.hits] };
+            });
       } catch (error) {
         this.setState({ error });
       } finally {
@@ -53,8 +75,11 @@ export default class App extends Component {
       <div className="App">
         <Searchbar onSubmit={this.handleSearchbarSubmit} />
         {error && <p>Whoops, something went wrong: {error.message}</p>}
-        {isLoading && <p>Loading...</p>}
+        {isLoading && <Loader />}
         {images.length > 0 && <ImageGallery images={images} />}
+        {images.length > 0 && images.length % 12 === 0 && (
+          <Button onClick={this.handleIncrementPage} />
+        )}
 
         <ToastContainer position="top-center" autoClose={3000} />
       </div>
